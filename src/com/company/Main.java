@@ -24,46 +24,30 @@ public class Main {
             System.out.println(i + "\t" + date[i] + "\t" + open[i] + "\t" + close[i] + "\t" + high[i] + "\t" + low[i]);
         }*/
         double[] close = file.getClose();
-        int len = close.length;
-        int l = len - 1;
+        int len = file.main();
         double t = 0;           //t
         double t2 = 0;       //t^2
         double y = 0;       //y
         double ty = 0;     //ty
         double a, b;
-        /*for(int i = 1; i<len; i++){
-            System.out.println(i + "\t" + close[i]);
-            t += i; //t
-            t2 += Math.pow(i, 2);    //t^2
-            y += close[i];  //y
-            ty += close[i] * i; //ty
+        for(int i = 1; i<len; i++){
+            t += i/len;
+            y += close[i]/len;
+            ty += i * close[i]/len;
+            t2 += Math.pow(i,2)/len;
         }
-        t /= len;   //t
-        t2 /= len;   //t^2
-        y /= len;   //y
-        ty /= len; //ty
 
-        b = (ty - t * y)/(t2 - t * t);
-        a = y - b * t;*/
-
-        y = close[1] + close[2] + close[3];
-        t = (1 + 2 + 3) / 3;
-        ty = close[1] + 2 * close[2] + 3 * close[3];
-        t2 = (1 + 2^2 + 3^2) / 3;
-
-        b = (ty - t * y) / ()
-
-
-        /*b = (ty * t - y) / (Math.pow(t, 2) - l);
-        a = (y - b * l) / t;*/
+        b = (ty - t * y)/(t2 - t*t);
+        a = y - b * t;
 
         System.out.println(a);
         System.out.println(b);
 
+
         double[] pred = new double[len];
         for(int i = 1; i<len; i++){
-            pred[i] = a + b * (i);
-            System.out.println(i+ "\t" + close[i] + "\t" + pred[i]);
+            pred[i] = a + b * i;
+            //System.out.println(i+ "\t" + (close[i]) + "\t" + pred[i]);
         }
         try(FileWriter writer = new FileWriter("C:\\Users\\pc\\Desktop\\1 КУРС\\ICT\\zapis.txt", false))
         {
@@ -71,7 +55,6 @@ public class Main {
 
                 writer.write(String.valueOf(close[i]));
                 writer.append('\t');
-                //writer.append(Double.toString(close[i]));
                 writer.append('\n');
             }
 
@@ -80,5 +63,55 @@ public class Main {
         catch(IOException ex){
             System.out.println(ex.getMessage());
         }
+        //test(factori(file), closi(file));
+        Matrix m = new Matrix(factori(file));
+        System.out.println(m.getColumnDimension());
+        System.out.println(m.getRowDimension());
+
+        Matrix m1 = new Matrix(closi(file), 1);
+        System.out.println(m1.getColumnDimension());
+        System.out.println(m1.getRowDimension());
+        m1.print(5, 5);
+        m.print(5,5);
+    }
+    public static double[][] factori(fileReader file){
+        int k = file.main();
+        double[] open = file.getOpen();
+        double[] close = file.getClose();
+        double[] low = file.getLow();
+        double[] high = file.getHigh();
+        double[][] x = new double[4][k];
+        for(int i =0; i<k; i++){
+            x[0][i] = 1;
+            x[1][i] = open[i];
+            x[2][i] = high[i];
+            x[3][i] = low[i];
+        }
+        return x;
+    }
+    public static double[] closi(fileReader file){
+        int k = file.main();
+        double[] close = file.getClose();
+        double[] y = new double[k];
+        for(int i =0; i<k; i++){
+            y[i] = close[i];
+        }
+        return y;
+    }
+    public static void test(double[][]ff, double[]yy){
+        Matrix A1=new Matrix(ff);
+        double[] z = new double[5];
+        //A1.print(10, 2);
+        Matrix B1=A1.transpose();
+        Matrix F1=A1.times(B1);
+        Matrix F4=F1.inverse();
+        Matrix F2=F4.times(A1);
+        Matrix C=new Matrix(yy,4);
+        Matrix F3=F2.times(C);
+        z=F3.getColumnPackedCopy();
+        System.out.println("Коэффициенты:");
+        for (int i = 0; i < 4; i++)
+            System.out.println("B"+i+"="+z[i]);
+
     }
 }
