@@ -1,9 +1,11 @@
 package com.company;
 
 import Jama.Matrix;
+import com.sun.jdi.Value;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.spi.AbstractResourceBundleProvider;
 
 public class Main {
     public static void main(String[] args) {
@@ -14,17 +16,18 @@ public class Main {
         double[] low = file.getLow();
         zapis(close);
 
-        Matrix m = new Matrix(factori(file));
-        Matrix m1 = new Matrix(closi(file), 1);
-        Matrix m_t = m.transpose();
-
-        double[] otveti = test(factori(file), closi(file));
-        for(int i = 0; i<10; i++){
-
-            double c = otveti[0] + otveti[1] * open[i] + otveti[2] * high[i] + otveti[3] * low[i];
-            System.out.println("real close " + close[i]);   //реальная цена
-            System.out.format("%.4f%n", c);         //предполагаемая цена
-            System.out.println(Math.abs(close[i] - c));     //сравнение исходных и полученных данных
+        try {
+            double[] otveti = solve(factori(file), closi(file));    //Cn = b0 + b1*On + b2*Hn + b3*Ln
+            double r = R(factori(file), closi(file), otveti);
+            double[] ans_week = solve(file, 7);
+            double[] ans_month = solve(file , 31);
+            double[] ans_half_year = solve(file, 180);
+            double[] ans_year = solve(file, 365);
+            double[] ans_2years = solve(file, 730);
+        } catch (ValueException e) {
+            e.printStackTrace();
+        } catch (СoefficientException e) {
+            e.printStackTrace();
         }
     }
 
@@ -50,7 +53,8 @@ public class Main {
         double y = 0;       //y
         double ty = 0;     //ty
         double a, b;
-        double[] close = file.getClose();
+
+        double[]close = file.getClose();
         for(int i = 1; i<len; i++){
             t += i/len;
             y += close[i]/len;
@@ -69,57 +73,156 @@ public class Main {
 
     }
 
-    public static double[][] factori(fileReader file){
+    //первая модель, данные за все время  Cn = b0 + b1*On + b2*Hn + b3*Ln
+    public static double[][] factori(fileReader file) throws ValueException{
         int k = file.main();
         double[] open = file.getOpen();
-        double[] close = file.getClose();
         double[] low = file.getLow();
         double[] high = file.getHigh();
         double[][] x = new double[4][k];
-        for(int i =0; i<k; i++){
-            x[0][i] = 1;
-            x[1][i] = open[i];
-            x[2][i] = high[i];
-            x[3][i] = low[i];
+        try{
+            for(int i =0; i<k; i++){
+                x[0][i] = 1;
+                x[1][i] = open[i];
+                if(open[i] < 1) throw new ValueException("close value less than 1", open[i]);
+                x[2][i] = high[i];
+                if(high[i] < 1) throw new ValueException("close value less than 1", high[i]);
+                x[3][i] = low[i];
+                if(low[i] < 1) throw new ValueException("close value less than 1", low[i]);
+            }
+        }
+        catch(ArrayIndexOutOfBoundsException e){
+            System.out.println("array out of bounds "+e.getMessage());
         }
         return x;
     }
-    public static double[] closi(fileReader file){
+    public static double[] closi(fileReader file)throws ValueException{
         int k = file.main();
         double[] close = file.getClose();
         double[] y = new double[k];
         for(int i =0; i<k; i++){
             y[i] = close[i];
+            if(close[i] < 1) throw new ValueException("close value less than 1", close[i]);
         }
         return y;
     }
-    public static double[] test(double[][]ff, double[]yy){
-        Matrix X = new Matrix(ff);
-        log("X", X);
-        Matrix Xt = X.transpose();
-        log("Xt", Xt);
-        Matrix X1 = X.times(Xt);
-        log("x1", X1);
-        Matrix Xinv = X1.inverse();
-        log("Xinv", Xinv);
-        Matrix Y = new Matrix(yy, 1);
-        log("y", Y);
-        Matrix Xt2 = Xt.times(Xinv);
-        log("xt2", Xt2);
-        Matrix B = Y.times(Xt2);
-        log("B", B);
 
-        double[] z = new double[4];
-        z = B.getColumnPackedCopy();
+    //вторая модель, данные за последний месяц
+    public static double[][] factori_period(fileReader file, int period) throws ValueException{
+        int k = file.main();
+        double[] open = file.getOpen();
+        double[] low = file.getLow();
+        double[] high = file.getHigh();
+        double[][] x = new double[4][period];
+        try{
+            for(int i = 0; i < period; i++){
+                x[0][i] = 1;
+                x[1][i] = open[i + k - period];
+                if(open[i] < 1) throw new ValueException("close value less than 1", open[i]);
+                x[2][i] = high[i + k - period];
+                if(high[i] < 1) throw new ValueException("close value less than 1", high[i]);
+                x[3][i] = low[i + k - period];
+                if(low[i] < 1) throw new ValueException("close value less than 1", low[i]);
+            }
+        }
+        catch(ArrayIndexOutOfBoundsException e){
+            System.out.println("array out of bounds "+e.getMessage());
+        }
+        return x;
+    }
+    public static double[] closi_period(fileReader file, int period)throws ValueException{
+        int k = file.main();
+        double[] close = file.getClose();
+        double[] y = new double[period];
+        for(int i = 0; i < period; i++){
+            y[i] = close[i + k - period];
+            if(close[i] < 1) throw new ValueException("close value less than 1", close[i]);
+        }
+        return y;
+    }
+
+
+    public static double[] solve(double[][]ff, double[]yy) throws СoefficientException{
+
+        Matrix X = new Matrix(ff);
+        Matrix Xt = X.transpose();
+        Matrix X1 = X.times(Xt);
+        Matrix Xinv = X1.inverse();
+        Matrix Y = new Matrix(yy, 1);
+        Matrix Xt2 = Xt.times(Xinv);
+        Matrix B = Y.times(Xt2);
+
+        double[] z = B.getColumnPackedCopy();
+        System.out.println("Используются данные за все время " + yy.length);
         System.out.println("Коэффициенты:");
         for (int i = 0; i < 4; i++){
+            if(z[i] == 0) throw new СoefficientException("factor equals zero" , z[i]);
             System.out.println("B"+i+"="+z[i]);
         }
+        System.out.println();
+        return z;
+    }
+    public static double[] solve(fileReader file, int period) throws СoefficientException{
+
+        Matrix X = null;
+        try {
+            X = new Matrix(factori_period(file, period));
+        } catch (ValueException e) {
+            e.printStackTrace();
+        }
+        Matrix Xt = X.transpose();
+        Matrix X1 = X.times(Xt);
+        Matrix Xinv = X1.inverse();
+        Matrix Y = null;
+        try {
+            Y = new Matrix(closi_period(file, period), 1);
+        } catch (ValueException e) {
+            e.printStackTrace();
+        }
+        Matrix Xt2 = Xt.times(Xinv);
+        Matrix B = Y.times(Xt2);
+
+        double[] z = B.getColumnPackedCopy();
+        System.out.println("Испольщуются данные за " + period + " дней");
+        System.out.println("Коэффициенты:");
+        for (int i = 0; i < 4; i++){
+            if(z[i] == 0) throw new СoefficientException("factor equals zero" , z[i]);
+            System.out.println("B"+i+"="+z[i]);
+        }
+        System.out.println();
         return z;
     }
     public static void log(String name, Matrix M){
         System.out.println(name);
         System.out.println(M.getRowDimension() + " x " + M.getColumnDimension());
         System.out.println();
+    }
+
+    //коэффициент Детерминации
+    public static double R(double[][] ff, double[] yy, double[] z){
+        return 0;
+    }
+}
+class ValueException extends Exception{
+    double value;
+
+    public double getValue() {
+        return value;
+    }
+    public ValueException(String msg, double v){
+        super(msg);
+        value = v;
+    }
+}
+
+class СoefficientException extends Exception{
+    double koef;
+
+    public double getK() {
+        return koef;
+    }
+    public СoefficientException(String msg, double v){
+        super(msg);
+        koef = v;
     }
 }

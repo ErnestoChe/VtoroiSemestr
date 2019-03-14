@@ -1,6 +1,7 @@
 package com.company;
 
 import java.io.*;
+import java.text.NumberFormat;
 
 public class fileReader {
     String[] lines = new String[1500];
@@ -10,7 +11,8 @@ public class fileReader {
         try {
             //File file = new File("C:\\Users\\pc\\Desktop\\1 КУРС\\ICT\\EURUSD_190101_190201.txt");
             //File file = new File("C:\\Users\\pc\\Desktop\\1 КУРС\\ICT\\EURUSD_180216_190216.txt");
-            File file = new File("C:\\Users\\pc\\Desktop\\1 КУРС\\ICT\\EURUSD_150216_190216.txt");
+            //File file = new File("C:\\Users\\pc\\Desktop\\1 КУРС\\ICT\\EURUSD_150216_190216.txt");
+            File file = new File("C:\\Users\\pc\\IdeaProjects\\VtoroiSemestr\\src\\EURUSD_150216_190216.txt");
             //создаем объект FileReader для объекта File
             FileReader fr = new FileReader(file);
             //создаем BufferedReader с существующего FileReader для построчного считывания
@@ -66,3 +68,5 @@ public class fileReader {
         return low;
     }
 }
+
+
