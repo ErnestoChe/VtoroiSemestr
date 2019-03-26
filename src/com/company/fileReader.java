@@ -6,6 +6,7 @@ import java.text.NumberFormat;
 public class fileReader {
     String[] lines = new String[1500];
 
+    //считываем файлы с файла
     public int main() {
         int i = 0;
         try {
@@ -35,6 +36,8 @@ public class fileReader {
         return i;     //последняя строка - формат данных в .txt файле     <TICKER>,<PER>,<DATE>,<TIME>,<OPEN>,<HIGH>,<LOW>,<CLOSE>,<VOL>
         //return lines;
     }
+
+    //возвращает массив закрытия цен
     public double[] getClose(){
         int j = main();
         double[] close = new double[j];
@@ -43,6 +46,8 @@ public class fileReader {
         }
         return close;
     }
+
+    //возвращает массив цен открытия
     public double[] getOpen(){
         int j = main();
         double[] open = new double[j];
@@ -51,6 +56,8 @@ public class fileReader {
         }
         return open;
     }
+
+    //возвращает массив цен в высшей точки за период(день)
     public double[] getHigh(){
         int j = main();
         double[] high = new double[j];
@@ -59,6 +66,8 @@ public class fileReader {
         }
         return high;
     }
+
+    //возвращет массив цен в низшей точке за период(день)
     public double[] getLow(){       //"э рон дон дон" starts playing
         int j = main();
         double[] low = new double[j];
