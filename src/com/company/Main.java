@@ -11,57 +11,67 @@ public class Main {
         fileReader file = new fileReader();
         double[] close = file.getClose();
         zapis(close);
+        mnk(file);
         double[][] ans = new double[10][4];
         double[] r = new double[10];
+        solveDeterm(file, ans, r);
+        Tree tree = addInTree(r);
+
+    }
+    public static Tree addInTree(double[] r){
+        Tree tree = new Tree();
+        //TODO баланс дерева
+        tree.insert(5, r[5]);
+        tree.insert(3, r[3]);
+        tree.insert(7, r[7]);
+        for (int i = 0; i < 10; i++) {
+            if(i != 5 & i != 7 & i != 3)
+                tree.insert(i, r[i]);
+        }
+        tree.print(tree.find(5));
+        return tree;
+    }
+    //находим коэффициенты для факторов и коэффициенты детерминации
+    private static void solveDeterm(fileReader file, double[][] ans, double r[]){
         try {
             ans[0] = solve(file, 7);
-            r[0] = R(factori(file, 7), closi(file, 7), ans[0]);
+            r[0] = determinationKoef(factori(file, 7), closi(file, 7), ans[0]);
 
             ans[1] = solve(file, 14);
-            r[1] = R(factori(file, 14), closi(file, 14), ans[1]);
+            r[1] = determinationKoef(factori(file, 14), closi(file, 14), ans[1]);
 
             ans[2] = solve(file, 31);
-            r[2] = R(factori(file, 31), closi(file, 31), ans[2]);
+            r[2] = determinationKoef(factori(file, 31), closi(file, 31), ans[2]);
 
             ans[3] = solve(file, 60);
-            r[3] = R(factori(file, 60), closi(file, 60), ans[3]);
+            r[3] = determinationKoef(factori(file, 60), closi(file, 60), ans[3]);
 
             ans[4] = solve(file, 90);
-            r[4] = R(factori(file, 90), closi(file, 90), ans[4]);
+            r[4] = determinationKoef(factori(file, 90), closi(file, 90), ans[4]);
 
             ans[5] = solve(file, 180);
-            r[5] = R(factori(file, 180), closi(file, 180), ans[5]);
+            r[5] = determinationKoef(factori(file, 180), closi(file, 180), ans[5]);
 
             ans[6] = solve(file, 365);
-            r[6] = R(factori(file, 365), closi(file, 365), ans[6]);
+            r[6] = determinationKoef(factori(file, 365), closi(file, 365), ans[6]);
 
             ans[7] = solve(file, 730);
-            r[7] = R(factori(file, 730), closi(file, 730), ans[7]);
+            r[7] = determinationKoef(factori(file, 730), closi(file, 730), ans[7]);
 
             ans[8] = solve(file, 1095);
-            r[8] = R(factori(file, 1095), closi(file, 1095), ans[8]);
+            r[8] = determinationKoef(factori(file, 1095), closi(file, 1095), ans[8]);
 
             ans[9] = solve(factori(file), closi(file));    //Cn = b0 + b1*On + b2*Hn + b3*Ln
-            r[9] = R(factori(file), closi(file), ans[9]);
+            r[9] = determinationKoef(factori(file), closi(file), ans[9]);
 
         } catch (ValueException e) {
             e.printStackTrace();
         } catch (СoefficientException e) {
             e.printStackTrace();
         }
-        Tree tree = new Tree();
-        tree.insert(5, r[5]);
-        tree.insert(3, r[3]);
-        tree.insert(7, r[7]);
-        for (int i = 0; i < 10; i++) {
-            if(i != 5 & i != 7 & i != 3)
-            tree.insert(i, r[i]);
-        }
-        tree.print(tree.find(5));
     }
-
     //записываем в файл
-    public static void zapis(double[] close) {
+    private static void zapis(double[] close) {
         try (FileWriter writer = new FileWriter("C:\\Users\\pc\\Desktop\\1 КУРС\\ICT\\zapis.txt", false)) {
             for (int i = 1; i < close.length; i++) {
                 writer.write(String.valueOf(close[i]));
@@ -75,7 +85,7 @@ public class Main {
     }
 
     //вычисление коэффициентов по метожу наименьших квадратов
-    public double[] mnk(fileReader file) {
+    private static double[] mnk(fileReader file) {
         int len = file.main();
         double t = 0;           //t
         double t2 = 0;       //t^2
@@ -103,7 +113,7 @@ public class Main {
     }
 
     //первая модель, данные за все время  Cn = b0 + b1*On + b2*Hn + b3*Ln
-    public static double[][] factori(fileReader file) throws ValueException {
+    private static double[][] factori(fileReader file) throws ValueException {
         int k = file.main();
         double[] open = file.getOpen();
         double[] low = file.getLow();
@@ -125,7 +135,7 @@ public class Main {
         return x;
     }
 
-    public static double[] closi(fileReader file) throws ValueException {
+    private static double[] closi(fileReader file) throws ValueException {
         int k = file.main();
         double[] close = file.getClose();
         double[] y = new double[k];
@@ -137,7 +147,7 @@ public class Main {
     }
 
     //вторая модель, данные за последние 'period' дней
-    public static double[][] factori(fileReader file, int period) throws ValueException {
+    private static double[][] factori(fileReader file, int period) throws ValueException {
         int k = file.main();
         double[] open = file.getOpen();
         double[] low = file.getLow();
@@ -159,7 +169,7 @@ public class Main {
         return x;
     }
 
-    public static double[] closi(fileReader file, int period) throws ValueException {
+    private static double[] closi(fileReader file, int period) throws ValueException {
         int k = file.main();
         double[] close = file.getClose();
         double[] y = new double[period];
@@ -171,7 +181,7 @@ public class Main {
     }
 
     //находим коэффициенты за все время
-    public static double[] solve(double[][] ff, double[] yy) throws СoefficientException {
+    private static double[] solve(double[][] ff, double[] yy) throws СoefficientException {
 
         Matrix X = new Matrix(ff);
         Matrix Xt = X.transpose();
@@ -192,7 +202,7 @@ public class Main {
     }
 
     //нахождения коэффициентов за последние 'period' дней
-    public static double[] solve(fileReader file, int period) throws СoefficientException {
+    private static double[] solve(fileReader file, int period) throws СoefficientException {
 
         Matrix X = null;
         try {
@@ -231,7 +241,7 @@ public class Main {
     }
 
     //коэффициент Детерминации
-    public static double R(double[][] ff, double[] yy, double[] z) {
+    private static double determinationKoef(double[][] ff, double[] yy, double[] z) {
         double r = 0, S1 = 0, S2 = 0, S3 = 0;
         double[] u1 = new double[yy.length];
         double[] u2 = new double[yy.length];

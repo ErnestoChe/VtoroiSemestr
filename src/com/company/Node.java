@@ -6,16 +6,11 @@ class Node
     public double dData; // Другие данные
     public Node leftChild; // Левый потомок узла
     public Node rightChild; // Правый потомок узла
-    public Node parent;
+    public Node parent;     //Родительский узел
 
     public void displayNode() // Вывод узла
     {
-        System.out.print('{');
-        System.out.print(iData);
-        System.out.print(", ");
-        System.out.print(dData);
-        System.out.print("} ");
-        System.out.println();
+        System.out.println("data " + iData + " value " + dData);
         System.out.println("parent " + (parent != null ? parent.iData : "null"));
         System.out.println("left " + (leftChild != null ? leftChild.iData : "null"));
         System.out.println("right " + (rightChild != null ? rightChild.iData : "null"));

@@ -1,7 +1,6 @@
 package com.company;
 
 import java.io.*;
-import java.text.NumberFormat;
 
 public class fileReader {
     String[] lines = new String[1500];
