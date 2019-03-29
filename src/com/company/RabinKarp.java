@@ -4,28 +4,35 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class RabinKarp {
+
+    public static int p = 11; //простое число
+    public static int r = 13;  //остаток получаем от деления на это число
+
     public static void main(String[] args) {
         String a = "Программирование";
         String b = "мир";
-        String test = "aaa test bbb test ccc test ff";
-        String subtest = "test";
-        int r = R(a, b);
-        List ans = RabinKarp(a,b);
-        List ans_test = RabinKarp(test, subtest);
-        int r_test = R(test, subtest);
-        //System.out.println(ans);
-        System.out.println(ans_test);
-        System.out.println(r_test);
+        String t = "testcctectestftef";
+        String subt = "te";
+        System.out.println("-------");
+        for (int i = 0; i < t.length(); i++) {
+            System.out.println(i+" "+t.charAt(i));
+        }
+        System.out.println("-------");
+        String t2 = "abcdefghjkdeflmnopq";
+        String subt2 = "def";
+        System.out.println("======ОТВЕТ======");
+        System.out.println(RabinKarp(t, subt));
+        System.out.println("===ОТВЕТЫ====");
+        System.out.println(RabinKarp(t2, subt2));
     }
 
     public static int Hash(String x)
     {
-        int p = 31; //Простое число
         int result = 0;
-        //считаем хэш строки
+        int m = x.length();
         for (int i = 0; i < x.length(); i++)
         {
-            result += (int)Math.pow(p,x.length()-1-i)*(int)(x.charAt(i));
+            result += (int) Math.pow(p, m - 1 - i) * (int)(x.charAt(i));
         }
         return result;
     }
@@ -34,20 +41,23 @@ public class RabinKarp {
         int n = str.length();
         int m = sub.length();
         List<Integer> answers = new LinkedList<>();
-        int p = 53;
-        int x = 3;
-        int r = 51;
-        int sub_l = sub.length();
-        int hashS = Hash(str.substring(0, sub_l));
-        int hashW = Hash(sub);
+
+        int hashS = Hash(str.substring(0, m)) % r;
+        int hashW = Hash(sub) % r;
+
+        System.out.println("---ПЕРВЫЕ ХЭШИ---");
+        System.out.println(hashS % r + " hashS");
+        System.out.println(hashW % r + " hashW");
+        System.out.println("-----------------");
 
         for(int i = 0; i<n-m; i++){
             if(hashS == hashW){
-                answers.add(i-1);
+                answers.add(i);
             }
-            //TODO сокразенная формула перерасчета хэша
-            //hashS = (p * hashS - (int)Math.pow(p, m) * Hash(str.substring(i,i+1)) + Hash(str.substring(i+m, i+m+1))) % r;
-            hashS = Hash(str.substring(i, i+sub_l));
+            hashS = ((hashS - ((int)str.charAt(i) * (int)Math.pow(p, m-1)) % r) * p % r + (int)str.charAt(i+m)) % r;
+        }
+        if(answers.isEmpty()){
+            answers.add(-1);
         }
         return answers;
     }
