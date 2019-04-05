@@ -6,24 +6,18 @@ import java.util.List;
 public class RabinKarp {
 
     public static int p = 11; //простое число
-    public static int r = 13;  //остаток получаем от деления на это число
+    public static int r = (int) Math.pow(2, 32) - 1;  //остаток получаем от деления на это число
 
     public static void main(String[] args) {
-        String a = "Программирование";
-        String b = "мир";
-        String t = "testcctectestftef";
-        String subt = "te";
-        System.out.println("-------");
-        for (int i = 0; i < t.length(); i++) {
-            System.out.println(i+" "+t.charAt(i));
-        }
-        System.out.println("-------");
-        String t2 = "abcdefghjkdeflmnopq";
-        String subt2 = "def";
+        String t = "kek kek kek";
+        String subt = "k k";
+        String prog = "программирование";
+        String sub_prog = "а";
+
         System.out.println("======ОТВЕТ======");
         System.out.println(RabinKarp(t, subt));
-        System.out.println("===ОТВЕТЫ====");
-        System.out.println(RabinKarp(t2, subt2));
+        //System.out.println("===ОТВЕТЫ====");
+        //System.out.println(RabinKarp(prog, sub_prog));
     }
 
     public static int Hash(String x)
@@ -50,12 +44,13 @@ public class RabinKarp {
         System.out.println(hashW % r + " hashW");
         System.out.println("-----------------");
 
-        for(int i = 0; i<n-m; i++){
+        for(int i = 0; i< n - m; i++){
             if(hashS == hashW){
                 answers.add(i);
             }
             hashS = ((hashS - ((int)str.charAt(i) * (int)Math.pow(p, m-1)) % r) * p % r + (int)str.charAt(i+m)) % r;
         }
+
         if(answers.isEmpty()){
             answers.add(-1);
         }
